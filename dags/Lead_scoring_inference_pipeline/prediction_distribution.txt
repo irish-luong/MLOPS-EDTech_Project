@@ -1,0 +1,6 @@
+Prediction ratio for the date Wed Aug 14 17:25:45 2024 
+ 1   59.06% 
+ 0   40.94%
+Prediction ratio for the date Wed Aug 14 17:26:40 2024 
+ 1   59.06% 
+ 0   40.94%

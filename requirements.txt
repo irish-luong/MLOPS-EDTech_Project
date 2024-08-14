@@ -1,0 +1,14 @@
+mlflow
+networkx
+numpy
+optuna
+pandas
+pandas-profiling
+scikit-learn
+scipy
+seaborn
+six
+SQLAlchemy
+tqdm
+urllib3
+ydata-profiling

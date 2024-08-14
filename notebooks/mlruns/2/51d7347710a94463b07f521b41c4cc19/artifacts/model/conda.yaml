@@ -1,0 +1,8 @@
+channels:
+- conda-forge
+dependencies:
+- pip<=24.2
+- pip:
+  - mlflow==2.15.0
+  - pycaret==3.3.2
+name: Baseline_model_exp_02-env

@@ -1,0 +1,71 @@
+version: '3'
+x-airflow-common:
+  &airflow-common
+  image: ml_airflow:local
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=mysql+mysqldb://root:root@db:3306/airflow
+    - AIRFLOW__CORE__FERNET_KeEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+    - AIRFLOW__WEBSERVER__SECRET_KEY=local
+    - AIRFLOW__CORE__DAGS_FOLDER=/home/airflow/dags
+    - AIRFLOW__LOGGING__BASE_LOG_FOLDER=/opt/airflow/logs
+  volumes:
+    - ./dags:/home/airflow/dags
+    -  log:/opt/airflow/logs
+    - ./mlruns:/home/airflow/mlruns
+    - ./db:/home/airflow/sqlite_db
+  depends_on:
+    - db
+
+services:
+  db:
+    image: mysql:8.1.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: airflow
+      MYSQL_PORT_3306_TCP_PORT: 3306
+    container_name: airflow_db
+    ports: 
+      - 13306:3306
+
+  airflow-init:
+    << : *airflow-common
+    container_name: airflow_init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - airflow db init &&
+        airflow users create
+          --role Admin
+          --username airflow
+          --password airflow
+          --email airflow@airflow.com
+          --firstname airflow
+          --lastname airflow
+    restart: on-failure
+
+  airflow-webserver:
+    << : *airflow-common
+    command: airflow webserver
+    ports:
+      - 6007:6007
+    container_name: airflow_webserver
+    restart: always
+
+  airflow-scheduler:
+    << : *airflow-common
+    command: airflow scheduler
+    container_name: airflow_scheduler
+    restart: always
+
+  mlflow-server:
+    << : *airflow-common
+    ports:
+      - 6007:6007
+    container_name: mlflow_server
+    command: mlflow server --backend-store-uri='sqlite:///home/airflow/sqlite_db' --default-artifact-root="/home/airflow/mlruns" --port=6007 --host=0.0.0.0
+
+volumes:
+  log:
